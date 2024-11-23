@@ -188,6 +188,7 @@ app.get('/text', async (req, res) => {
     }
 });
 
+
 app.post('/calculateGValues', (req, res) => {
     const { dValues, rateValue } = req.body;
   
@@ -196,23 +197,31 @@ app.post('/calculateGValues', (req, res) => {
     }
   
     const gValues = [];
+    const interestValues = [];
     let previousGValue = 0;
   
     dValues.forEach((dValue, index) => {
-      let rate = rateValue[index]; // Change to 'let' so it can be reassigned
+      let rate = rateValue[index];
   
       if (rate > 1) {
         rate = rate / 100;
       }
   
-      const gValue = (previousGValue + dValue) * rate + (previousGValue + dValue);
+      const interest = (previousGValue + dValue) * rate;
+      const gValue = previousGValue + dValue + interest;
+  
+      interestValues.push(interest);
       gValues.push(gValue);
+  
       previousGValue = gValue;
     });
   
-    res.json(gValues);
+    res.json({ gValues, interestValues });
   });
   
+
+
+
 
   app.post('/loginSimple', async (req, res) => {
     const { email, password } = req.body;
