@@ -31,10 +31,12 @@ client.connect()
 let verificationCodes = {}; // Storage for verification codes
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'mail.privateemail.com',
+    port: 465,
+    secure: true, // SSL/TLS
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: process.env.EMAIL_USER, // пользователь
+        pass: process.env.EMAIL_PASS, // пароль
     },
 });
 
