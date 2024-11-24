@@ -203,7 +203,7 @@ app.post('/calculateGValues', (req, res) => {
     dValues.forEach((dValue, index) => {
       let rate = rateValue[index];
   
-      if (rate > 1) {
+      if (rate >= 1) {
         rate = rate / 100;
       }
   
