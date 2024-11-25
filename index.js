@@ -28,67 +28,16 @@ client.connect()
     .then(() => console.log('Connected to PostgreSQL database'))
     .catch(err => console.error('Connection error', err.stack));
 
-let verificationCodes = {}; // Storage for verification codes
+let verificationCodes = {};
 
 const transporter = nodemailer.createTransport({
     host: 'mail.privateemail.com',
     port: 465,
-    secure: true, // SSL/TLS
+    secure: true, 
     auth: {
-        user: process.env.EMAIL_USER, // пользователь
-        pass: process.env.EMAIL_PASS, // пароль
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS, 
     },
-});
-
-app.post('/register', async (req, res) => {
-    const { email, password } = req.body;
-
-    const verificationCode = Math.floor(100000 + Math.random() * 900000); // 6-digit code
-
-    try {
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: 'Your verification code',
-            text: `Your verification code: ${verificationCode}`,
-        });
-
-        // Store code and email address
-        verificationCodes[email] = verificationCode;
-        return res.status(200).json({ message: 'Verification code sent to your email.' });
-        
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Error sending the code.' });
-    }
-});
-
-app.post('/verify', async (req, res) => {
-    const { email, code, password } = req.body;
-
-
-    if (verificationCodes[email] && verificationCodes[email] == code) {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        
-        try {
-            const result = await client.query(
-                'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id',
-                [email, hashedPassword]
-            );
-
-            const userId = result.rows[0].id;
-
-            const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-            delete verificationCodes[email]; // Remove code after verification
-            return res.status(201).json({ message: 'Account successfully created!', token });
-        } catch (error) {
-            console.error(error);
-            return res.status(500).json({ error: 'Error creating account.' });
-        }
-    } else {
-        return res.status(400).json({ error: 'Invalid verification code.' });
-    }
 });
 
 app.post('/login', async (req, res) => {
@@ -126,7 +75,7 @@ app.post('/forgot-password', async (req, res) => {
             return res.status(400).json({ error: 'User not found' });
         }
 
-        const resetCode = Math.floor(100000 + Math.random() * 900000); // 6-digit code
+        const resetCode = Math.floor(100000 + Math.random() * 900000); 
 
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
@@ -171,7 +120,7 @@ app.post('/reset-password', async (req, res) => {
 app.get('/users', async (req, res) => {
     try {
         const result = await client.query('SELECT * FROM users');
-        res.status(200).json(result.rows); // Возвращаем всех пользователей
+        res.status(200).json(result.rows); 
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error fetching users.' });
@@ -181,7 +130,7 @@ app.get('/users', async (req, res) => {
 app.get('/text', async (req, res) => { 
     try {
 
-        res.status(200).send("text"); // Возвращаем всех пользователей 
+        res.status(200).send("text"); 
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error fetching users.' });
@@ -223,22 +172,19 @@ app.post('/calculateGValues', (req, res) => {
 
 
 
-  app.post('/loginSimple', async (req, res) => {
+  app.post('/register', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Check if user exists
         let result = await client.query('SELECT * FROM users WHERE email = $1', [email]);
 
         if (result.rows.length === 0) {
-            // User does not exist, create a new one
             const hashedPassword = await bcrypt.hash(password, 10);
             await client.query(
                 'INSERT INTO users (email, password) VALUES ($1, $2)',
                 [email, hashedPassword]
             );
 
-            // Retrieve the new user to get their ID
             result = await client.query('SELECT * FROM users WHERE email = $1', [email]);
         }
 
@@ -257,7 +203,6 @@ app.post('/calculateGValues', (req, res) => {
 });
 
 
-// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
